@@ -1,3 +1,5 @@
+# PHPStorm system folder
+/.idea/
 
 ###> symfony/framework-bundle ###
 /.env
