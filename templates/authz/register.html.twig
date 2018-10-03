@@ -10,5 +10,8 @@
 
 <div class="example-wrapper">
     <h1>Hello {{ page_name }}! ✅</h1>
+	{{ form_start(form) }}
+	{{ form_widget(form) }}
+	{{ form_end(form) }}
 </div>
 {% endblock %}

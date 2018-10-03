@@ -10,6 +10,6 @@ Clone the codebase and advance in the newly created folder. Run the command
 
 `php bin/console server:run`
 
-## Initializae the database
+## Initialize the database
 
 `php bin/console doctrine:database:create`
