@@ -1,29 +1,57 @@
 <?php
 
-namespace App\Video;
+namespace App\Entity;
 
+use Doctrine\ORM\Mapping as ORM;
+
+/**
+ * @ORM\Entity(repositoryClass="App\Repository\VideoRepository")
+ */
 class Video
 {
-    protected $title;
-    protected $url;
+    /**
+     * @ORM\Id()
+     * @ORM\GeneratedValue()
+     * @ORM\Column(type="integer")
+     */
+    private $id;
 
-    public function getTitle()
+    /**
+     * @ORM\Column(type="string", length=255)
+     */
+    private $name;
+
+    /**
+     * @ORM\Column(type="string", length=255)
+     */
+    private $url;
+
+    public function getId(): ?int
     {
-        return $this->title;
+        return $this->id;
     }
 
-    public function setTitle($title)
+    public function getName(): ?string
     {
-        $this->title = $title;
+        return $this->name;
     }
 
-    public function getUrl()
+    public function setName(string $name): self
+    {
+        $this->name = $name;
+
+        return $this;
+    }
+
+    public function getUrl(): ?string
     {
         return $this->url;
     }
 
-    public function setUrl($url)
+    public function setUrl(string $url): self
     {
         $this->url = $url;
+
+        return $this;
     }
 }
