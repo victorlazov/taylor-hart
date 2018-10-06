@@ -20,10 +20,16 @@ class VideoPermissionsService
         $this->adminName     = $adminName;
     }
 
+    /**
+     * Initializes the service parameters.
+     *
+     * @param $repository
+     * @param $courseId
+     * @param \App\Service\LoginService $loginService
+     */
     public function init($repository, $courseId, LoginService $loginService)
     {
-        $this->setRepository($repository);
-        $this->useLoginService($loginService);
+        $this->setRepository($repository)->useLoginService($loginService);
 
         if ($this->getLoginService()->checkAuth()) {
             $userId          = $this->getLoginService()->getSession()->get('uid');
@@ -120,7 +126,7 @@ class VideoPermissionsService
     }
 
     /**
-     *
+     * Checks whether or not the user has watched the video in the minimum time frame.
      *
      * @return bool
      */

@@ -2,9 +2,11 @@
 
 namespace App\Service;
 
+use App\Entity\CoursePageViews;
+
 use Doctrine\Common\Persistence\ObjectManager;
 
-class RegistrationService
+class VideoImpressionService
 {
     private $entityManager;
     private $userData;
@@ -21,16 +23,16 @@ class RegistrationService
         return $this->entityManager;
     }
 
-    public function setUserData($userData): self
+    public function persistVideoImpression($userId, $courseId): self
     {
-        $this->userData = $userData;
+        $pageView = new CoursePageViews();
+        $pageView->setUserId($userId);
+        $pageView->setCourseId($courseId);
+        $pageView->setTimestamp(time());
+
+        $this->getEntityManager()->persist($pageView);
+        $this->getEntityManager()->flush();
 
         return $this;
-    }
-
-    public function persistData()
-    {
-        $this->getEntityManager()->persist($this->userData);
-        $this->getEntityManager()->flush();
     }
 }

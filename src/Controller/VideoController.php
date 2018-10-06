@@ -6,6 +6,7 @@ use App\Entity\CoursePageViews;
 use App\Service\LoginService;
 use App\Service\VideoGenerator;
 
+use App\Service\VideoImpressionService;
 use App\Service\VideoPermissionsService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
@@ -31,21 +32,20 @@ class VideoController extends AbstractController
         $id,
         VideoGenerator $videoGenerator,
         LoginService $loginService,
-        VideoPermissionsService $videoPermissions
+        VideoPermissionsService $videoPermissions,
+        VideoImpressionService $videoImpressions
     ) {
         $pageViewsRepository = $this->getDoctrine()->getRepository(CoursePageViews::class);
         $videoPermissions->init($pageViewsRepository, $id, $loginService);
 
         if ($viewVideo = $videoPermissions->checkViewPermissions()) {
             $entityManager = $this->getDoctrine()->getManager();
+            $userId        = $loginService->getSession()->get('uid');
 
-            $pageView = new CoursePageViews();
-            $pageView->setUserId($loginService->getSession()->get('uid'));
-            $pageView->setCourseId($id);
-            $pageView->setTimestamp(time());
-
-            $entityManager->persist($pageView);
-            $entityManager->flush();
+            $videoImpressions->setEntityManager($entityManager)->persistVideoImpression(
+                $userId,
+                $id
+            );
         }
 
         if ($video = $videoGenerator->getVideo($id)) {

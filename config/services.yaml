@@ -33,6 +33,7 @@ services:
     App\Service\VideoPermissionsService:
         arguments:
             $adminName: 'admin'
+            # maximum count of video impressions before the time frame is activated.
             $maxViewCount: '10'
             # relative timestamp of the minimum time before the video is available.
             $viewTimeLimit: '-1 day'
