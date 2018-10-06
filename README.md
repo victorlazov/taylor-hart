@@ -12,4 +12,16 @@ Clone the codebase and advance in the newly created folder. Run the command
 
 ## Initialize the database
 
+Configure the database in your `.env` file e.g.
+
+`DATABASE_URL="mysql://db_user:db_password@127.0.0.1:3306/db_name"`
+
+and initialize it with the command:
+
 `php bin/console doctrine:database:create`
+
+## Populate table schema
+
+To generate the database schema run the command
+ 
+`php bin/console doctrine:migrations:migrate`

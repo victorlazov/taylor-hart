@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Hello {{ page_name }}!{% endblock %}
+{% block title %}Login page{% endblock %}
 
 {% block body %}
 <style>
@@ -9,6 +9,24 @@
 </style>
 
 <div class="example-wrapper">
-    <h1>Hello {{ page_name }}! ✅</h1>
+    <h1>Sign in</h1>
+	{# Registration notifications #}
+	{% set reg_success = app.request.query.get('reg_success') %}
+	{% if reg_success %}
+		<h2>Registration successful! ✅</h2>
+		<p>You can now sign in.</p>
+	{% endif %}
+
+	{# Login notifications #}
+	{% set login_success = app.request.query.get('login_success') %}
+	{% if login_success is not null and not login_success %}
+		<h2>Your login failed! ❌</h2>
+		<p>Please check your authentication details!</p>
+	{% endif %}
+
+	{# Login form #}
+	{{ form_start(form) }}
+	{{ form_widget(form) }}
+	{{ form_end(form) }}
 </div>
 {% endblock %}

@@ -38,6 +38,13 @@ class VideoGenerator
         return $this->videos->getObjects();
     }
 
+    /**
+     * Loads single video from the fixture.
+     *
+     * @param $id
+     *
+     * @return mixed|null
+     */
     public function getVideo($id)
     {
         if ( ! empty($video = $this->getVideos()[$id])) {

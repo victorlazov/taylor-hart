@@ -3,6 +3,8 @@
 namespace App\Controller;
 
 use App\Entity\User;
+use App\Service\LoginService;
+use App\Service\RegistrationService;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
@@ -14,15 +16,10 @@ use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 
 class AuthzController extends AbstractController
 {
-    public function index()
-    {
-
-    }
-
     /**
      * @Route("/register", name="register")
      */
-    public function register(Request $request)
+    public function register(Request $request, RegistrationService $registrationService)
     {
         $user = new User();
         $form = $this->createFormBuilder($user)
@@ -35,15 +32,19 @@ class AuthzController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // Update the user with the submitted data.
-            $user = $form->getData();
+            $user = $form->getData(); // Get the submitted data
+            $entityManager = $this->getDoctrine()->getManager(); // Get the object manager
 
-            // Save the  @#$%^&.
-            $entityManager = $this->getDoctrine()->getManager();
-            $entityManager->persist($user);
-            $entityManager->flush();
+            $registrationService
+                ->setEntityManager($entityManager)
+                ->setUserData($user);
 
-            return $this->redirectToRoute('registration_success');
+            // Persist the submitted data.
+            $registrationService->persistData();
+
+            return $this->redirectToRoute('login', [
+                'reg_success' => true,
+            ]);
         }
 
         return $this->render('authz/register.html.twig', [
@@ -53,20 +54,40 @@ class AuthzController extends AbstractController
     }
 
     /**
-     * @Route("/reg_ok", name="registration_success")
-     */
-    public function registrationSuccess()
-    {
-        return $this->render("authz/success.html.twig");
-    }
-
-    /**
      * @Route("/login", name="login")
      */
-    public function login()
+    public function login(Request $request, LoginService $loginService)
     {
+        $form = $this->createFormBuilder()
+                     ->add('email', EmailType::class)
+                     ->add('password', PasswordType::class)
+                     ->add('submit', SubmitType::class, ['label' => 'Login!'])
+                     ->getForm();
+
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $data = $form->getData();
+            $repository = $this->getDoctrine()->getRepository(User::class);
+
+            $user = $loginService
+                ->setRepository($repository)
+                ->setUser($data['email'])
+                ->checkAuth($data['password']);
+
+            if ($user) {
+                // TODO: log the user in!
+            }
+
+            // Redirect the user once logged in.
+            return $this->redirectToRoute('login', [
+                'login_success' => false,
+            ]);
+        }
+
         return $this->render('authz/login.html.twig', [
-            'page_name' => 'Login',
+            'form'      => $form->createView(),
+            'reg_success' => false
         ]);
     }
 }
