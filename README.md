@@ -25,3 +25,11 @@ and initialize it with the command:
 To generate the database schema run the command
  
 `php bin/console doctrine:migrations:migrate`
+
+# Usage
+
+You can start from `login`, `register` or `videos` pages.
+
+# Configuration
+
+Check `services.yaml` for `VideoPermissionsService` arguments.
