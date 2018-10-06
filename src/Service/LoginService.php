@@ -24,7 +24,7 @@ class LoginService
      *
      * @return \App\Service\LoginService
      */
-    public function setRepository($repository): LoginService
+    public function setRepository($repository): self
     {
         $this->repository = $repository;
 
@@ -46,7 +46,7 @@ class LoginService
      *
      * @return \Symfony\Component\HttpFoundation\Session\Session
      */
-    protected function getSession(): Session
+    public function getSession(): Session
     {
         return $this->session;
     }
@@ -60,7 +60,7 @@ class LoginService
      *
      * @return $this
      */
-    public function setUser($email): LoginService
+    public function setUser($email): self
     {
         $this->user = $this->repository->findOneBy(['email' => $email]);
 
@@ -88,7 +88,7 @@ class LoginService
      *
      * @param $password
      */
-    public function authenticate($password)
+    public function authenticate($password): void
     {
         if ($this->checkPassword($password)) {
             $this->session->invalidate();
@@ -104,7 +104,7 @@ class LoginService
      *
      * @return bool
      */
-    public function checkAuth()
+    public function checkAuth(): bool
     {
         if ($this->session && ! empty($this->session->get('uid'))) {
             return true;
@@ -116,7 +116,8 @@ class LoginService
     /**
      * Logs out the user.
      */
-    public function logout() {
+    public function logout(): void
+    {
         $this->session->invalidate();
     }
 }
