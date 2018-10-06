@@ -6,6 +6,12 @@
         {% block stylesheets %}{% endblock %}
     </head>
     <body>
+        {% set username = app.session.get('username') %}
+        {% if username is not null %}
+        <div style="float: right; width: 200px;">
+            You are logged in as <blockquote style="color: tomato; font-family: monospace;">{{ username }}</blockquote> <a href="{{ path('logout') }}">Log out</a>
+        </div>
+        {% endif %}
         {% block body %}{% endblock %}
         {% block javascripts %}{% endblock %}
     </body>

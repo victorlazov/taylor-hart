@@ -4,11 +4,26 @@ namespace App\Service;
 
 use App\Entity\User;
 
+use Symfony\Component\HttpFoundation\Session\Session;
+
 class LoginService
 {
     private $repository;
     private $user;
+    private $session;
 
+    public function __construct()
+    {
+        $this->session = new Session();
+    }
+
+    /**
+     * Sets object repository.
+     *
+     * @param $repository
+     *
+     * @return \App\Service\LoginService
+     */
     public function setRepository($repository): LoginService
     {
         $this->repository = $repository;
@@ -24,6 +39,16 @@ class LoginService
     protected function getUser(): User
     {
         return $this->user;
+    }
+
+    /**
+     * Session getter.
+     *
+     * @return \Symfony\Component\HttpFoundation\Session\Session
+     */
+    protected function getSession(): Session
+    {
+        return $this->session;
     }
 
     /**
@@ -49,7 +74,7 @@ class LoginService
      *
      * @return bool
      */
-    protected function checkPassword($plainPass)
+    protected function checkPassword($plainPass): bool
     {
         if ($this->getUser()->getPassword() === $plainPass) {
             return true;
@@ -59,18 +84,39 @@ class LoginService
     }
 
     /**
-     * Checks the provided password against the loaded user details.
+     * Performs authentication logic.
      *
      * @param $password
+     */
+    public function authenticate($password)
+    {
+        if ($this->checkPassword($password)) {
+            $this->session->invalidate();
+            $this->session->start();
+
+            $this->session->set('uid', $this->getUser()->getId());
+            $this->session->set('username', $this->getUser()->getUsername());
+        }
+    }
+
+    /**
+     * Checks if the user is authenticated or not.
      *
      * @return bool
      */
-    public function checkAuth($password)
+    public function checkAuth()
     {
-        if ($this->checkPassword($password)) {
-            return $this->user;
+        if ($this->session && ! empty($this->session->get('uid'))) {
+            return true;
         }
 
         return false;
+    }
+
+    /**
+     * Logs out the user.
+     */
+    public function logout() {
+        $this->session->invalidate();
     }
 }

@@ -2,7 +2,9 @@
 
 namespace App\Controller;
 
+use App\Service\LoginService;
 use App\Service\VideoGenerator;
+
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -11,7 +13,7 @@ class VideoController extends AbstractController
     /**
      * @Route("/video", name="video_index")
      */
-    public function index(VideoGenerator $videoGenerator)
+    public function index(VideoGenerator $videoGenerator, LoginService $loginService)
     {
         return $this->render('video/index.html.twig',
             [
@@ -23,7 +25,7 @@ class VideoController extends AbstractController
     /**
      * @Route("/video/{id}", name="video")
      */
-    public function view($id, VideoGenerator $videoGenerator)
+    public function view($id, VideoGenerator $videoGenerator, LoginService $loginService)
     {
         if ($video = $videoGenerator->getVideo($id)) {
 

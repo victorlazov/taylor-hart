@@ -7,8 +7,11 @@ use App\Service\LoginService;
 use App\Service\RegistrationService;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Routing\Annotation\Route;
+
 use Symfony\Component\HttpFoundation\Request;
+
+use Symfony\Component\Routing\Annotation\Route;
+
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
@@ -19,8 +22,16 @@ class AuthzController extends AbstractController
     /**
      * @Route("/register", name="register")
      */
-    public function register(Request $request, RegistrationService $registrationService)
-    {
+    public function register(
+        Request $request,
+        LoginService $loginService,
+        RegistrationService $registrationService
+    ) {
+        // Bail early if the user is logged in.
+        if ($loginService->checkAuth()) { // Authentication successful!
+            return $this->redirectToRoute('video_index');
+        }
+
         $user = new User();
         $form = $this->createFormBuilder($user)
                      ->add('email', EmailType::class)
@@ -32,7 +43,7 @@ class AuthzController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $user = $form->getData(); // Get the submitted data
+            $user          = $form->getData(); // Get the submitted data
             $entityManager = $this->getDoctrine()->getManager(); // Get the object manager
 
             $registrationService
@@ -67,27 +78,36 @@ class AuthzController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $data = $form->getData();
+            $data       = $form->getData();
             $repository = $this->getDoctrine()->getRepository(User::class);
 
-            $user = $loginService
+            $loginService
                 ->setRepository($repository)
-                ->setUser($data['email'])
-                ->checkAuth($data['password']);
+                ->setUser($data['email']);
 
-            if ($user) {
-                // TODO: log the user in!
+            $loginService->authenticate($data['password']);
+
+            if ($loginService->checkAuth()) { // Authentication successful!
+                return $this->redirectToRoute('video_index');
             }
 
-            // Redirect the user once logged in.
+            // Authentication failed.
             return $this->redirectToRoute('login', [
                 'login_success' => false,
             ]);
         }
 
         return $this->render('authz/login.html.twig', [
-            'form'      => $form->createView(),
-            'reg_success' => false
+            'form' => $form->createView(),
         ]);
+    }
+
+    /**
+     * @Route("/logout", name="logout")
+     */
+    public function logout(LoginService $loginService) {
+        $loginService->logout();
+
+        return $this->redirectToRoute('login');
     }
 }

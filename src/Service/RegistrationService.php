@@ -21,7 +21,7 @@ class RegistrationService
         return $this->entityManager;
     }
 
-    public function setUserData(array $userData): RegistrationService
+    public function setUserData($userData): RegistrationService
     {
         $this->userData = $userData;
 
