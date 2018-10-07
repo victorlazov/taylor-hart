@@ -6,6 +6,7 @@ class VideoPermissionsService
 {
     private $loginService;
     private $pageViewsRepository;
+    private $courseId;
 
     private $maxViewCount;
     private $viewTimeLimit;
@@ -29,16 +30,45 @@ class VideoPermissionsService
      */
     public function init($repository, $courseId, LoginService $loginService)
     {
-        $this->setRepository($repository)->useLoginService($loginService);
+        $this
+            ->setRepository($repository)
+            ->setCourseId($courseId)
+            ->useLoginService($loginService);
 
         if ($this->getLoginService()->checkAuth()) {
-            $userId          = $this->getLoginService()->getSession()->get('uid');
-            $this->pageViews = $this->pageViewsRepository->getCouserViewsById(
-                $userId,
-                $courseId,
-                $this->maxViewCount
-            );
+            $this->setPageViews($courseId);
         }
+    }
+
+    /**
+     * Course id setter.
+     *
+     * @param $courseId
+     *
+     * @return \App\Service\VideoPermissionsService
+     */
+    private function setCourseId($courseId): self
+    {
+        $this->courseId = $courseId;
+
+        return $this;
+    }
+
+    /**
+     * Page views setter.
+     *
+     * @return \App\Service\VideoPermissionsService
+     */
+    private function setPageViews(): self
+    {
+        $userId          = $this->getLoginService()->getSession()->get('uid');
+        $this->pageViews = $this->pageViewsRepository->getCouserViewsById(
+            $userId,
+            $this->courseId,
+            $this->maxViewCount
+        );
+
+        return $this;
     }
 
     /**
@@ -74,7 +104,7 @@ class VideoPermissionsService
      *
      * @return \App\Service\LoginService
      */
-    public function getLoginService(): LoginService
+    private function getLoginService(): LoginService
     {
         return $this->loginService;
     }

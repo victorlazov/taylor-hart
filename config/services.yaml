@@ -30,6 +30,12 @@ services:
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
 
+    App\Service\LoginService\:
+        class: 'LoginService'
+        arguments:
+            - '@Symfony\Component\HttpFoundation\Session\SessionInterface'
+            - '@App\Repository\UserRepository'
+
     App\Service\VideoPermissionsService:
         arguments:
             $adminName: 'admin'

@@ -9,6 +9,7 @@ use App\Service\VideoGenerator;
 use App\Service\VideoImpressionService;
 use App\Service\VideoPermissionsService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\Routing\Annotation\Route;
 
 class VideoController extends AbstractController
@@ -16,7 +17,7 @@ class VideoController extends AbstractController
     /**
      * @Route("/video", name="video_index")
      */
-    public function index(VideoGenerator $videoGenerator, LoginService $loginService)
+    public function index(VideoGenerator $videoGenerator)
     {
         return $this->render('video/index.html.twig',
             [
@@ -35,6 +36,8 @@ class VideoController extends AbstractController
         VideoPermissionsService $videoPermissions,
         VideoImpressionService $videoImpressions
     ) {
+        $loginService->setSession(new Session());
+
         $pageViewsRepository = $this->getDoctrine()->getRepository(CoursePageViews::class);
         $videoPermissions->init($pageViewsRepository, $id, $loginService);
 

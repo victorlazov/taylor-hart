@@ -29,3 +29,7 @@ You can start from `login`, `register` or `videos` pages.
 # Configuration
 
 Check `services.yaml` for `VideoPermissionsService` arguments.
+
+# Tests
+
+You can run the unit tests with the command `./bin/phpunit`.

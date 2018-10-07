@@ -4,41 +4,18 @@ namespace App\Service;
 
 use App\Entity\User;
 
-use Symfony\Component\HttpFoundation\Session\Session;
+use App\Repository\UserRepository;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
 class LoginService
 {
-    private $repository;
-    private $user;
     private $session;
+    private $repository;
 
-    public function __construct()
+    public function __construct(SessionInterface $session, UserRepository $repository)
     {
-        $this->session = new Session();
-    }
-
-    /**
-     * Sets object repository.
-     *
-     * @param $repository
-     *
-     * @return \App\Service\LoginService
-     */
-    public function setRepository($repository): self
-    {
+        $this->session    = $session;
         $this->repository = $repository;
-
-        return $this;
-    }
-
-    /**
-     * User getter.
-     *
-     * @return \App\Entity\User
-     */
-    protected function getUser(): User
-    {
-        return $this->user;
     }
 
     /**
@@ -46,37 +23,34 @@ class LoginService
      *
      * @return \Symfony\Component\HttpFoundation\Session\Session
      */
-    public function getSession(): Session
+    public function getSession(): SessionInterface
     {
         return $this->session;
     }
 
     /**
-     * User setter.
-     *
-     * Loads a user from the database by provided email address.
+     * Looks up if the user is in the database
      *
      * @param $email
      *
-     * @return $this
+     * @return null|User
      */
-    public function setUser($email): self
+    protected function getUserPasswordByEmail($email): ?User
     {
-        $this->user = $this->repository->findOneBy(['email' => $email]);
-
-        return $this;
+        return $this->repository->findOneBy(['email' => $email]);
     }
 
     /**
      * Checks provided password against the loaded user.
      *
      * @param $plainPass
+     * @param $userPass
      *
      * @return bool
      */
-    protected function checkPassword($plainPass): bool
+    protected function checkPassword($plainPass, $userPass): bool
     {
-        if ($this->getUser()->getPassword() === $plainPass) {
+        if ($userPass === $plainPass) {
             return true;
         }
 
@@ -86,16 +60,19 @@ class LoginService
     /**
      * Performs authentication logic.
      *
+     * @param $email
      * @param $password
      */
-    public function authenticate($password): void
+    public function authenticate($email, $password): void
     {
-        if ($this->checkPassword($password)) {
+        $user = $this->getUserPasswordByEmail($email);
+
+        if ($user && $this->checkPassword($password, $user->getPassword())) {
             $this->session->invalidate();
             $this->session->start();
 
-            $this->session->set('uid', $this->getUser()->getId());
-            $this->session->set('username', $this->getUser()->getUsername());
+            $this->session->set('uid', $user->getId());
+            $this->session->set('username', $user->getUsername());
         }
     }
 
