@@ -36,8 +36,6 @@ class VideoController extends AbstractController
         VideoPermissionsService $videoPermissions,
         VideoImpressionService $videoImpressions
     ) {
-        $loginService->setSession(new Session());
-
         $pageViewsRepository = $this->getDoctrine()->getRepository(CoursePageViews::class);
         $videoPermissions->init($pageViewsRepository, $id, $loginService);
 

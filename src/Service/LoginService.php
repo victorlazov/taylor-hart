@@ -35,7 +35,7 @@ class LoginService
      *
      * @return null|User
      */
-    protected function getUserPasswordByEmail($email): ?User
+    protected function getUserByEmail($email): ?User
     {
         return $this->repository->findOneBy(['email' => $email]);
     }
@@ -65,7 +65,7 @@ class LoginService
      */
     public function authenticate($email, $password): void
     {
-        $user = $this->getUserPasswordByEmail($email);
+        $user = $this->getUserByEmail($email);
 
         if ($user && $this->checkPassword($password, $user->getPassword())) {
             $this->session->invalidate();
