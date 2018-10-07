@@ -30,6 +30,11 @@ services:
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
 
+    App\Service\RegistrationService\:
+        class: 'RegistrationService'
+        arguments:
+        - '@Doctrine\Common\Persistence\ObjectManager'
+
     App\Service\LoginService\:
         class: 'LoginService'
         arguments:

@@ -43,15 +43,10 @@ class AuthzController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $user          = $form->getData(); // Get the submitted data
-            $entityManager = $this->getDoctrine()->getManager(); // Get the object manager
-
-            $registrationService
-                ->setEntityManager($entityManager)
-                ->setUserData($user);
+            $user = $form->getData(); // Get the submitted data
 
             // Persist the submitted data.
-            $registrationService->persistData();
+            $registrationService->persistData($user);
 
             return $this->redirectToRoute('login', [
                 'reg_success' => true,
