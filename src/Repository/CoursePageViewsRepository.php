@@ -19,16 +19,16 @@ class CoursePageViewsRepository extends ServiceEntityRepository
         parent::__construct($registry, CoursePageViews::class);
     }
 
-    public function getCouserViewsById($userId, $courseId, $limit)
+    public function getCourseViewsById($userId, $courseId, $limit)
     {
         $connection = $this->getEntityManager()->getConnection();
 
         $sql  = "
-        SELECT * FROM course_page_views pv
-        WHERE pv.user_id = :userId
-        AND pv.course_id = :courseId
-        ORDER BY pv.timestamp DESC
-        LIMIT {$limit}
+            SELECT * FROM course_page_views pv
+            WHERE pv.user_id = :userId
+            AND pv.course_id = :courseId
+            ORDER BY pv.timestamp DESC
+            LIMIT {$limit}
         ";
         $stmt = $connection->prepare($sql);
         $stmt->execute([

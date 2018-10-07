@@ -7,7 +7,6 @@ use Nelmio\Alice\Loader\NativeLoader;
 class VideoGenerator
 {
     protected $loader;
-
     protected $videos;
 
     /**

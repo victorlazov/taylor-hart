@@ -43,15 +43,10 @@ class AuthzController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $user          = $form->getData(); // Get the submitted data
-            $entityManager = $this->getDoctrine()->getManager(); // Get the object manager
-
-            $registrationService
-                ->setEntityManager($entityManager)
-                ->setUserData($user);
+            $user = $form->getData(); // Get the submitted data
 
             // Persist the submitted data.
-            $registrationService->persistData();
+            $registrationService->persistData($user);
 
             return $this->redirectToRoute('login', [
                 'reg_success' => true,
@@ -78,14 +73,9 @@ class AuthzController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $data       = $form->getData();
-            $repository = $this->getDoctrine()->getRepository(User::class);
+            $data = $form->getData();
 
-            $loginService
-                ->setRepository($repository)
-                ->setUser($data['email']);
-
-            $loginService->authenticate($data['password']);
+            $loginService->authenticate($data['email'], $data['password']);
 
             if ($loginService->checkAuth()) { // Authentication successful!
                 return $this->redirectToRoute('video_index');
@@ -105,7 +95,8 @@ class AuthzController extends AbstractController
     /**
      * @Route("/logout", name="logout")
      */
-    public function logout(LoginService $loginService) {
+    public function logout(LoginService $loginService)
+    {
         $loginService->logout();
 
         return $this->redirectToRoute('login');

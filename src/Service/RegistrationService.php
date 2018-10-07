@@ -7,30 +7,15 @@ use Doctrine\Common\Persistence\ObjectManager;
 class RegistrationService
 {
     private $entityManager;
-    private $userData;
 
-    public function setEntityManager(ObjectManager $entityManager): self
+    public function __construct(ObjectManager $entityManager)
     {
         $this->entityManager = $entityManager;
-
-        return $this;
     }
 
-    public function getEntityManager(): ObjectManager
+    public function persistData($userData)
     {
-        return $this->entityManager;
-    }
-
-    public function setUserData($userData): self
-    {
-        $this->userData = $userData;
-
-        return $this;
-    }
-
-    public function persistData()
-    {
-        $this->getEntityManager()->persist($this->userData);
-        $this->getEntityManager()->flush();
+        $this->entityManager->persist($userData);
+        $this->entityManager->flush();
     }
 }

@@ -29,3 +29,13 @@ You can start from `login`, `register` or `videos` pages.
 # Configuration
 
 Check `services.yaml` for `VideoPermissionsService` arguments.
+
+# Tests
+
+Set up database connection for the unit tests creating `phpunit.xml` in application root based on
+`phpunit.xml.dist` adding a line like this:
+`<env name="DATABASE_URL" value="mysql://admin@127.0.0.1:3306/taste" />` in the `<env>` section.
+ 
+It's best the database to be without any data.
+
+You can run the unit tests with the command `./bin/phpunit`.

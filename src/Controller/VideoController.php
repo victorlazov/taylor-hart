@@ -3,12 +3,14 @@
 namespace App\Controller;
 
 use App\Entity\CoursePageViews;
+
 use App\Service\LoginService;
 use App\Service\VideoGenerator;
-
 use App\Service\VideoImpressionService;
 use App\Service\VideoPermissionsService;
+
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+
 use Symfony\Component\Routing\Annotation\Route;
 
 class VideoController extends AbstractController
@@ -16,12 +18,10 @@ class VideoController extends AbstractController
     /**
      * @Route("/video", name="video_index")
      */
-    public function index(VideoGenerator $videoGenerator, LoginService $loginService)
+    public function index(VideoGenerator $videoGenerator)
     {
         return $this->render('video/index.html.twig',
-            [
-                'videos' => $videoGenerator->getVideos(),
-            ]
+            ['videos' => $videoGenerator->getVideos(),]
         );
     }
 
@@ -35,21 +35,14 @@ class VideoController extends AbstractController
         VideoPermissionsService $videoPermissions,
         VideoImpressionService $videoImpressions
     ) {
-        $pageViewsRepository = $this->getDoctrine()->getRepository(CoursePageViews::class);
-        $videoPermissions->init($pageViewsRepository, $id, $loginService);
+        $videoPermissions->setCoursePageViews($id);
 
         if ($viewVideo = $videoPermissions->checkViewPermissions()) {
-            $entityManager = $this->getDoctrine()->getManager();
-            $userId        = $loginService->getSession()->get('uid');
-
-            $videoImpressions->setEntityManager($entityManager)->persistVideoImpression(
-                $userId,
-                $id
-            );
+            $userId = $loginService->getSession()->get('uid');
+            $videoImpressions->persistVideoImpression($userId, $id);
         }
 
         if ($video = $videoGenerator->getVideo($id)) {
-
             return $this->render('video/view.html.twig', [
                 'video'      => $video,
                 'video_id'   => $id,
