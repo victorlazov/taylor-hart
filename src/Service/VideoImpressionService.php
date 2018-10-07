@@ -9,20 +9,20 @@ use Doctrine\Common\Persistence\ObjectManager;
 class VideoImpressionService
 {
     private $entityManager;
-    private $userData;
 
-    public function setEntityManager(ObjectManager $entityManager): self
+    public function __construct(ObjectManager $entityManager)
     {
         $this->entityManager = $entityManager;
-
-        return $this;
     }
 
-    public function getEntityManager(): ObjectManager
-    {
-        return $this->entityManager;
-    }
-
+    /**
+     * Persists course pagve video impression to the database.
+     *
+     * @param $userId
+     * @param $courseId
+     *
+     * @return \App\Service\VideoImpressionService
+     */
     public function persistVideoImpression($userId, $courseId): self
     {
         $pageView = new CoursePageViews();
@@ -30,8 +30,8 @@ class VideoImpressionService
         $pageView->setCourseId($courseId);
         $pageView->setTimestamp(time());
 
-        $this->getEntityManager()->persist($pageView);
-        $this->getEntityManager()->flush();
+        $this->entityManager->persist($pageView);
+        $this->entityManager->flush();
 
         return $this;
     }

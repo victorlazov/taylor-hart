@@ -33,6 +33,11 @@ services:
     App\Service\RegistrationService\:
         class: 'RegistrationService'
         arguments:
+            - '@Doctrine\Common\Persistence\ObjectManager'
+
+    App\Service\VideoImpressionService\:
+        class: 'VideoImpressionService'
+        arguments:
         - '@Doctrine\Common\Persistence\ObjectManager'
 
     App\Service\LoginService\:
@@ -43,6 +48,8 @@ services:
 
     App\Service\VideoPermissionsService:
         arguments:
+            $pageViewsRepository: '@App\Repository\CoursePageViewsRepository'
+            $loginService: '@App\Service\LoginService'
             $adminName: 'admin'
             # maximum count of video impressions before the time frame is activated.
             $maxViewCount: '10'

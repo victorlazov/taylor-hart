@@ -2,11 +2,12 @@
 
 namespace App\Service;
 
+use App\Repository\CoursePageViewsRepository;
+
 class VideoPermissionsService
 {
     private $loginService;
     private $pageViewsRepository;
-    private $courseId;
 
     private $maxViewCount;
     private $viewTimeLimit;
@@ -14,99 +15,40 @@ class VideoPermissionsService
 
     private $pageViews;
 
-    public function __construct($maxViewCount, $viewTimeLimit, $adminName)
-    {
+    public function __construct(
+        CoursePageViewsRepository $pageViewsRepository,
+        LoginService $loginService,
+        $maxViewCount,
+        $viewTimeLimit,
+        $adminName
+    ) {
+        $this->pageViewsRepository = $pageViewsRepository;
+        $this->loginService        = $loginService;
+
         $this->maxViewCount  = (int)$maxViewCount;
         $this->viewTimeLimit = $viewTimeLimit;
         $this->adminName     = $adminName;
     }
 
     /**
-     * Initializes the service parameters.
-     *
-     * @param $repository
-     * @param $courseId
-     * @param \App\Service\LoginService $loginService
-     */
-    public function init($repository, $courseId, LoginService $loginService)
-    {
-        $this
-            ->setRepository($repository)
-            ->setCourseId($courseId)
-            ->useLoginService($loginService);
-
-        if ($this->getLoginService()->checkAuth()) {
-            $this->setPageViews($courseId);
-        }
-    }
-
-    /**
-     * Course id setter.
-     *
-     * @param $courseId
-     *
-     * @return \App\Service\VideoPermissionsService
-     */
-    private function setCourseId($courseId): self
-    {
-        $this->courseId = $courseId;
-
-        return $this;
-    }
-
-    /**
      * Page views setter.
      *
-     * @return \App\Service\VideoPermissionsService
-     */
-    private function setPageViews(): self
-    {
-        $userId          = $this->getLoginService()->getSession()->get('uid');
-        $this->pageViews = $this->pageViewsRepository->getCouserViewsById(
-            $userId,
-            $this->courseId,
-            $this->maxViewCount
-        );
-
-        return $this;
-    }
-
-    /**
-     * @param $repository
+     * @param $courseId
      *
      * @return \App\Service\VideoPermissionsService
      */
-    private function setRepository($repository): self
+    public function setCoursePageViews($courseId): self
     {
-        $this->pageViewsRepository = $repository;
+        if ($this->loginService->checkAuth()) {
+            $userId          = $this->loginService->getSession()->get('uid');
+            $this->pageViews = $this->pageViewsRepository->getCourseViewsById(
+                $userId,
+                $courseId,
+                $this->maxViewCount
+            );
+        }
 
         return $this;
-    }
-
-    /**
-     * Setter for the login service.
-     *
-     * TODO: with the current architecture it's best to have once source for the user - loginService.
-     *
-     * @param \App\Service\LoginService $loginService
-     *
-     * @return \App\Service\VideoPermissionsService
-     */
-    private function useLoginService(LoginService $loginService): self
-    {
-        $this->loginService = $loginService;
-
-        return $this;
-    }
-
-    /**
-     * LoginService getter.
-     *
-     * @return \App\Service\LoginService
-     */
-    private function getLoginService(): LoginService
-    {
-        return $this->loginService;
     }
 
     /**
@@ -116,7 +58,7 @@ class VideoPermissionsService
      */
     public function checkViewPermissions(): bool
     {
-        if ($this->getLoginService()->checkAuth()) {
+        if ($this->loginService->checkAuth()) {
             if ($this->checkAdmin() || $this->checkPageViews() || ( ! $this->checkPageViews() && $this->checkLastView())) {
                 return true;
             } else {
@@ -134,7 +76,7 @@ class VideoPermissionsService
      */
     private function checkAdmin(): bool
     {
-        if ($this->getLoginService()->getSession()->get('username') === $this->adminName) {
+        if ($this->loginService->getSession()->get('username') === $this->adminName) {
             return true;
         }
 
