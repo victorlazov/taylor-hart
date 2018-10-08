@@ -24,7 +24,8 @@ To generate the database schema run the command
 
 # Usage
 
-You can start from `login`, `register` or `videos` pages.
+You can start from `login`, `register` or `videos` pages. If you want to be admin, your user name
+should be `admin`.
 
 # Configuration
 
