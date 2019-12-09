@@ -1,13 +1,17 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Service;
 
-use App\Repository\CoursePageViewsRepository;
+use App\Entity\VideoPageView;
+use App\Repository\VideoPageViewRepository;
+use App\Repository\UserRepository;
 
 class VideoPermissionsService
 {
     private $loginService;
     private $pageViewsRepository;
+    private $userRepository;
 
     private $maxViewCount;
     private $viewTimeLimit;
@@ -16,53 +20,38 @@ class VideoPermissionsService
     private $pageViews;
 
     public function __construct(
-        CoursePageViewsRepository $pageViewsRepository,
+        VideoPageViewRepository $pageViewsRepository,
+        UserRepository $userRepository,
         LoginService $loginService,
-        $maxViewCount,
-        $viewTimeLimit,
-        $adminName
+        int $maxViewCount,
+        string $viewTimeLimit,
+        string $adminName
     ) {
         $this->pageViewsRepository = $pageViewsRepository;
-        $this->loginService        = $loginService;
+        $this->loginService = $loginService;
+        $this->userRepository = $userRepository;
 
-        $this->maxViewCount  = (int)$maxViewCount;
+        $this->maxViewCount = $maxViewCount;
         $this->viewTimeLimit = $viewTimeLimit;
-        $this->adminName     = $adminName;
-    }
-
-    /**
-     * Page views setter.
-     *
-     * @param $courseId
-     *
-     * @return \App\Service\VideoPermissionsService
-     */
-    public function setCoursePageViews($courseId): self
-    {
-        if ($this->loginService->checkAuth()) {
-            $userId          = $this->loginService->getSession()->get('uid');
-            $this->pageViews = $this->pageViewsRepository->getCourseViewsById(
-                $userId,
-                $courseId,
-                $this->maxViewCount
-            );
-        }
-
-        return $this;
+        $this->adminName = $adminName;
     }
 
     /**
      * Checks whether or not the login service user has
      *
+     * @param VideoPageView[] $pageViews
+     *
      * @return bool
      */
-    public function checkViewPermissions(): bool
+    public function checkViewPermissions(array $pageViews): bool
     {
         if ($this->loginService->checkAuth()) {
-            if ($this->checkAdmin() || $this->checkPageViews() || ( ! $this->checkPageViews() && $this->checkLastView())) {
+            if (
+                $this->checkAdmin()
+                || $this->checkPageViews($pageViews)
+                || (!$this->checkPageViews($pageViews) && $this->checkLastView($pageViews))
+            ) {
                 return true;
-            } else {
-                return false;
             }
         }
 
@@ -76,40 +65,30 @@ class VideoPermissionsService
      */
     private function checkAdmin(): bool
     {
-        if ($this->loginService->getSession()->get('username') === $this->adminName) {
-            return true;
-        }
-
-        return false;
+        return $this->loginService->getSession()->get('username') === $this->adminName;
     }
 
     /**
      * Check if the page view of the course are less than the allowed maximum.
      *
+     * @var VideoPageView[] $pageViews
+     *
      * @return bool
      */
-    private function checkPageViews(): bool
+    private function checkPageViews(array $pageViews): bool
     {
-        if ($this->pageViews && count($this->pageViews) < $this->maxViewCount) {
-            return true;
-        }
-
-        return false;
+        return $pageViews && count($pageViews) < $this->maxViewCount;
     }
 
     /**
      * Checks whether or not the user has watched the video in the minimum time frame.
      *
+     * @var VideoPageView[] $pageViews
+     *
      * @return bool
      */
-    private function checkLastView(): bool
+    private function checkLastView(array $pageViews): bool
     {
-        $lastView = current($this->pageViews);
-
-        if ($lastView['timestamp'] < strtotime($this->viewTimeLimit)) {
-            return true;
-        }
-
-        return false;
+        return current($pageViews)->getTimestamp() < strtotime($this->viewTimeLimit);
     }
 }

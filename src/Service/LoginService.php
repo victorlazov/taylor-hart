@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Service;
 
@@ -10,12 +11,12 @@ use Symfony\Component\HttpFoundation\Session\SessionInterface;
 class LoginService
 {
     private $session;
-    private $repository;
+    private $userRepository;
 
-    public function __construct(SessionInterface $session, UserRepository $repository)
+    public function __construct(SessionInterface $session, UserRepository $userRepository)
     {
-        $this->session    = $session;
-        $this->repository = $repository;
+        $this->session = $session;
+        $this->userRepository = $userRepository;
     }
 
     /**
@@ -29,18 +30,6 @@ class LoginService
     }
 
     /**
-     * Looks up if the user is in the database
-     *
-     * @param $email
-     *
-     * @return null|User
-     */
-    protected function getUserByEmail($email): ?User
-    {
-        return $this->repository->findOneBy(['email' => $email]);
-    }
-
-    /**
      * Checks provided password against the loaded user.
      *
      * @param $plainPass
@@ -48,7 +37,7 @@ class LoginService
      *
      * @return bool
      */
-    protected function checkPassword($plainPass, $userPass): bool
+    protected function checkPassword(string $plainPass, string $userPass): bool
     {
         if ($userPass === $plainPass) {
             return true;
@@ -63,9 +52,9 @@ class LoginService
      * @param $email
      * @param $password
      */
-    public function authenticate($email, $password): void
+    public function authenticate(string $email, string $password): void
     {
-        $user = $this->getUserByEmail($email);
+        $user = $this->userRepository->findUserByEmail($email);
 
         if ($user && $this->checkPassword($password, $user->getPassword())) {
             $this->session->invalidate();
@@ -83,7 +72,7 @@ class LoginService
      */
     public function checkAuth(): bool
     {
-        if ($this->session && ! empty($this->session->get('uid'))) {
+        if ($this->session && !empty($this->session->get('uid'))) {
             return true;
         }
 

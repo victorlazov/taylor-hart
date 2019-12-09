@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Controller;
 
@@ -7,11 +8,8 @@ use App\Service\LoginService;
 use App\Service\RegistrationService;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-
 use Symfony\Component\HttpFoundation\Request;
-
 use Symfony\Component\Routing\Annotation\Route;
-
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
@@ -34,11 +32,11 @@ class AuthzController extends AbstractController
 
         $user = new User();
         $form = $this->createFormBuilder($user)
-                     ->add('email', EmailType::class)
-                     ->add('password', PasswordType::class)
-                     ->add('username', TextType::class)
-                     ->add('save', SubmitType::class, ['label' => 'Register!'])
-                     ->getForm();
+            ->add('email', EmailType::class)
+            ->add('password', PasswordType::class)
+            ->add('username', TextType::class)
+            ->add('save', SubmitType::class, ['label' => 'Register!'])
+            ->getForm();
 
         $form->handleRequest($request);
 
@@ -54,7 +52,7 @@ class AuthzController extends AbstractController
         }
 
         return $this->render('authz/register.html.twig', [
-            'form'      => $form->createView(),
+            'form' => $form->createView(),
             'page_name' => 'Registration',
         ]);
     }
@@ -65,10 +63,10 @@ class AuthzController extends AbstractController
     public function login(Request $request, LoginService $loginService)
     {
         $form = $this->createFormBuilder()
-                     ->add('email', EmailType::class)
-                     ->add('password', PasswordType::class)
-                     ->add('submit', SubmitType::class, ['label' => 'Login!'])
-                     ->getForm();
+            ->add('email', EmailType::class)
+            ->add('password', PasswordType::class)
+            ->add('submit', SubmitType::class, ['label' => 'Login!'])
+            ->getForm();
 
         $form->handleRequest($request);
 

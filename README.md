@@ -22,9 +22,15 @@ To generate the database schema run the command
  
 `php bin/console doctrine:migrations:migrate`
 
+## Populate dev data
+
+To generate videos with doctrine fixtures execute the command:
+
+`php bin/console doctrine:fixtures:load`
+
 # Usage
 
-You can start from `login`, `register` or `videos` pages. If you want to be admin, your user name
+You can start from `login`, `register` or `video` pages. If you want to be admin, your user name
 should be `admin`.
 
 # Configuration
