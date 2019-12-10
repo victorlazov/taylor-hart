@@ -3,26 +3,28 @@ declare(strict_types=1);
 
 namespace App\Service;
 
+use App\Entity\User;
 use App\Entity\VideoPageView;
 use App\Repository\VideoPageViewRepository;
 use App\Repository\UserRepository;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
 class VideoPermissionsService
 {
     private $loginService;
     private $pageViewsRepository;
     private $userRepository;
+    private $session;
 
     private $maxViewCount;
     private $viewTimeLimit;
     private $adminName;
 
-    private $pageViews;
-
     public function __construct(
         VideoPageViewRepository $pageViewsRepository,
         UserRepository $userRepository,
         LoginService $loginService,
+        SessionInterface $session,
         int $maxViewCount,
         string $viewTimeLimit,
         string $adminName
@@ -30,6 +32,7 @@ class VideoPermissionsService
         $this->pageViewsRepository = $pageViewsRepository;
         $this->loginService = $loginService;
         $this->userRepository = $userRepository;
+        $this->session = $session;
 
         $this->maxViewCount = $maxViewCount;
         $this->viewTimeLimit = $viewTimeLimit;
@@ -65,7 +68,11 @@ class VideoPermissionsService
      */
     private function checkAdmin(): bool
     {
-        return $this->loginService->getSession()->get('username') === $this->adminName;
+        /**
+         * @var $user User
+         */
+        $user = $this->session->get('user');
+        return $user->getUsername() === $this->adminName;
     }
 
     /**
@@ -75,9 +82,9 @@ class VideoPermissionsService
      *
      * @return bool
      */
-    private function checkPageViews(array $pageViews): bool
+    private function checkPageViews(array $pageViews = []): bool
     {
-        return $pageViews && count($pageViews) < $this->maxViewCount;
+        return count($pageViews) < $this->maxViewCount;
     }
 
     /**
@@ -87,8 +94,9 @@ class VideoPermissionsService
      *
      * @return bool
      */
-    private function checkLastView(array $pageViews): bool
+    private function checkLastView(array $pageViews = []): bool
     {
-        return current($pageViews)->getTimestamp() < strtotime($this->viewTimeLimit);
+
+        return count($pageViews) > 0 && current($pageViews)->getTimestamp() < strtotime($this->viewTimeLimit);
     }
 }

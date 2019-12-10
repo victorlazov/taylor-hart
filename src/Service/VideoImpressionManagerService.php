@@ -18,23 +18,19 @@ class VideoImpressionManagerService
     }
 
     /**
-     * Persists course pagve video impression to the database.
+     * Persists course page video impression to the database.
      *
-     * @param $userId
-     * @param $courseId
-     *
-     * @return \App\Service\VideoImpressionManagerService
+     * @param User $user
+     * @param Video $video
      */
-    public function addVideoImpression(User $user, int $video): self
+    public function addVideoImpression(User $user, Video $video)
     {
         $pageView = new VideoPageView();
         $pageView->setUser($user);
-        $pageView->setCourseId($video);
+        $pageView->setVideo($video);
         $pageView->setTimestamp(time());
 
-        $this->entityManager->persist($pageView);
+        $this->entityManager->merge($pageView);
         $this->entityManager->flush();
-
-        return $this;
     }
 }

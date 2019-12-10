@@ -33,22 +33,6 @@ services:
   App\Service\:
     resource: '../src/Service'
 
-#  App\Service\RegistrationService\:
-#    class: 'RegistrationService'
-#    arguments:
-#      - '@Doctrine\Common\Persistence\ObjectManager'
-#
-#  App\Service\VideoImpressionService\:
-#    class: 'VideoImpressionService'
-#    arguments:
-#      - '@Doctrine\Common\Persistence\ObjectManager'
-#
-#  App\Service\LoginService\:
-#    class: 'LoginService'
-#    arguments:
-#      - '@Symfony\Component\HttpFoundation\Session\SessionInterface'
-#      - '@App\Repository\UserRepository'
-#
   App\Service\VideoPermissionsService:
     arguments:
       $pageViewsRepository: '@App\Repository\VideoPageViewRepository'

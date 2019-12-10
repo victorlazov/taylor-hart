@@ -20,16 +20,6 @@ class LoginService
     }
 
     /**
-     * Session getter.
-     *
-     * @return \Symfony\Component\HttpFoundation\Session\Session
-     */
-    public function getSession(): SessionInterface
-    {
-        return $this->session;
-    }
-
-    /**
      * Checks provided password against the loaded user.
      *
      * @param $plainPass
@@ -60,8 +50,7 @@ class LoginService
             $this->session->invalidate();
             $this->session->start();
 
-            $this->session->set('uid', $user->getId());
-            $this->session->set('username', $user->getUsername());
+            $this->session->set('user', $user);
         }
     }
 
@@ -72,11 +61,7 @@ class LoginService
      */
     public function checkAuth(): bool
     {
-        if ($this->session && !empty($this->session->get('uid'))) {
-            return true;
-        }
-
-        return false;
+        return !empty($this->session->get('user'));
     }
 
     /**

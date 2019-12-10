@@ -16,6 +16,7 @@ class RegistrationService
 
     public function persistData($userData)
     {
+        var_dump($userData);
         $this->entityManager->persist($userData);
         $this->entityManager->flush();
     }
