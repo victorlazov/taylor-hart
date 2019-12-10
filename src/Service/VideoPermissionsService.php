@@ -5,15 +5,11 @@ namespace App\Service;
 
 use App\Entity\User;
 use App\Entity\VideoPageView;
-use App\Repository\VideoPageViewRepository;
-use App\Repository\UserRepository;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
 class VideoPermissionsService
 {
     private $loginService;
-    private $pageViewsRepository;
-    private $userRepository;
     private $session;
 
     private $maxViewCount;
@@ -21,17 +17,13 @@ class VideoPermissionsService
     private $adminName;
 
     public function __construct(
-        VideoPageViewRepository $pageViewsRepository,
-        UserRepository $userRepository,
         LoginService $loginService,
         SessionInterface $session,
         int $maxViewCount,
         string $viewTimeLimit,
         string $adminName
     ) {
-        $this->pageViewsRepository = $pageViewsRepository;
         $this->loginService = $loginService;
-        $this->userRepository = $userRepository;
         $this->session = $session;
 
         $this->maxViewCount = $maxViewCount;
@@ -46,16 +38,17 @@ class VideoPermissionsService
      *
      * @return bool
      */
-    public function checkViewPermissions(array $pageViews): bool
+    public function checkViewPermissions(array $pageViews = []): bool
     {
-        if ($this->loginService->checkAuth()) {
-            if (
+        if (
+            $this->loginService->checkAuth()
+            && (
                 $this->checkAdmin()
                 || $this->checkPageViews($pageViews)
                 || (!$this->checkPageViews($pageViews) && $this->checkLastView($pageViews))
-            ) {
-                return true;
-            }
+            )
+        ) {
+            return true;
         }
 
         return false;
@@ -96,7 +89,6 @@ class VideoPermissionsService
      */
     private function checkLastView(array $pageViews = []): bool
     {
-
         return count($pageViews) > 0 && current($pageViews)->getTimestamp() < strtotime($this->viewTimeLimit);
     }
 }

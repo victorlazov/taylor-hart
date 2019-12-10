@@ -35,11 +35,9 @@ services:
 
   App\Service\VideoPermissionsService:
     arguments:
-      $pageViewsRepository: '@App\Repository\VideoPageViewRepository'
-      $userRepository: '@App\Repository\UserRepository'
       $loginService: '@App\Service\LoginService'
-      $adminName: 'admin'
+      $adminName: '%env(ADMIN_USERNAME)%'
       # maximum count of video impressions before the time frame is activated.
-      $maxViewCount: '10'
+      $maxViewCount: '%env(MAX_VIEW_COUNT)%'
       # relative timestamp of the minimum time before the video is available.
-      $viewTimeLimit: '-1 day'
+      $viewTimeLimit: '%env(VIEW_TIME_LIMIT)%'
