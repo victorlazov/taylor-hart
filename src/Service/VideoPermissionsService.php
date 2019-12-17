@@ -89,6 +89,6 @@ class VideoPermissionsService
      */
     private function checkLastView(array $pageViews = []): bool
     {
-        return count($pageViews) > 0 && current($pageViews)->getTimestamp() < strtotime($this->viewTimeLimit);
+        return count($pageViews) > 0 && end($pageViews)->getTimestamp() < strtotime($this->viewTimeLimit);
     }
 }

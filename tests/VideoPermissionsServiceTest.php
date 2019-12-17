@@ -17,26 +17,34 @@ use Symfony\Component\HttpFoundation\Session\Storage\MockArraySessionStorage;
 class VideoPermissionsServiceTest extends TestCase
 {
     /**
-     * @var LoginService
+     * @var LoginService|\PHPUnit_Framework_MockObject_MockObject
      */
     private $loginService;
     /**
-     * @var SessionInterface
+     * @var SessionInterface|\PHPUnit_Framework_MockObject_MockObject
      */
     private $session;
 
     protected function setUp()
     {
         $this->loginService = $this->createMock(LoginService::class);
-        $this->session = new Session(new MockArraySessionStorage());
+        $this->session = $this->createMock(Session::class);
     }
 
-    /**
-     * @dataProvider pageViewsDataProvider
-     * @param array $pageViews
-     */
-    public function testCheckViewPermissions(array $pageViews)
+    public function testCheckViewPermissionsSuccess()
     {
+        $user = $this->constructUser('username');
+
+        $this->loginService->expects($this->any())
+            ->method('checkAuth')
+            ->willReturn(true);
+
+        $this->session->expects($this->any())
+            ->method('get')
+            ->willReturn($user);
+
+        $pageViews = $this->constructPageViews($user, 9);
+
         $videoPermissionsService = new VideoPermissionsService(
             $this->loginService,
             $this->session,
@@ -49,36 +57,162 @@ class VideoPermissionsServiceTest extends TestCase
         $this->assertTrue($viewVideo);
     }
 
-    public function pageViewsDataProvider(): array
+    public function testCheckViewPermissionsSuccessTimeFramePassed()
+    {
+        $user = $this->constructUser('username');
+
+        $this->loginService->expects($this->any())
+            ->method('checkAuth')
+            ->willReturn(true);
+
+        $this->session->expects($this->any())
+            ->method('get')
+            ->willReturn($user);
+
+        $pageViews = $this->constructPageViews($user, 10);
+
+        $videoPermissionsService = new VideoPermissionsService(
+            $this->loginService,
+            $this->session,
+            10,
+            '-5 seconds',
+            'admin'
+        );
+        $viewVideo = $videoPermissionsService->checkViewPermissions($pageViews);
+
+        $this->assertTrue($viewVideo);
+    }
+
+    public function testCheckViewPermissionsFailPageViews()
+    {
+        $user = $this->constructUser('username');
+
+        $this->loginService->expects($this->any())
+            ->method('checkAuth')
+            ->willReturn(true);
+
+        $this->session->expects($this->any())
+            ->method('get')
+            ->willReturn($user);
+
+        $pageViews = $this->constructPageViews($user, 15);
+
+        $videoPermissionsService = new VideoPermissionsService(
+            $this->loginService,
+            $this->session,
+            10,
+            '-1 day',
+            'admin'
+        );
+        $viewVideo = $videoPermissionsService->checkViewPermissions($pageViews);
+
+        $this->assertFalse($viewVideo);
+    }
+
+    public function testCheckViewPermissionsFailTimeFrameNotPassed()
+    {
+        $user = $this->constructUser('username');
+
+        $this->loginService->expects($this->any())
+            ->method('checkAuth')
+            ->willReturn(true);
+
+        $this->session->expects($this->any())
+            ->method('get')
+            ->willReturn($user);
+
+        $pageViews = $this->constructPageViews($user, 10);
+
+        $videoPermissionsService = new VideoPermissionsService(
+            $this->loginService,
+            $this->session,
+            10,
+            '-15 seconds',
+            'admin'
+        );
+        $viewVideo = $videoPermissionsService->checkViewPermissions($pageViews);
+
+        $this->assertFalse($viewVideo);
+    }
+
+    public function testCheckViewPermissionsFailNotAuthenticated()
+    {
+        $this->loginService->expects($this->any())
+            ->method('checkAuth')
+            ->willReturn(false);
+
+        $pageViews = [];
+
+        $videoPermissionsService = new VideoPermissionsService(
+            $this->loginService,
+            $this->session,
+            10,
+            '-1 day',
+            'admin'
+        );
+        $viewVideo = $videoPermissionsService->checkViewPermissions($pageViews);
+
+        $this->assertFalse($viewVideo);
+    }
+
+    public function testAdminCheckViewPermissions()
+    {
+        $user = $this->constructUser('admin');
+
+        $this->loginService->expects($this->any())
+            ->method('checkAuth')
+            ->willReturn(true);
+
+        $this->session->expects($this->any())
+            ->method('get')
+            ->willReturn($user);
+
+        $pageViews = $this->constructPageViews($user, 12);
+
+        $videoPermissionsService = new VideoPermissionsService(
+            $this->loginService,
+            $this->session,
+            10,
+            '-1 day',
+            'admin'
+        );
+        $viewVideo = $videoPermissionsService->checkViewPermissions($pageViews);
+
+        $this->assertTrue($viewVideo);
+    }
+
+    private function constructUser(string $username)
+    {
+        return (new User())
+            ->setId(1)
+            ->setUsername($username)
+            ->setEmail('me@admin.com')
+            ->setPassword('password');
+    }
+
+    /**
+     * @param User $user
+     * @param int $number
+     *
+     * @return VideoPageView[]
+     */
+    private function constructPageViews(User $user, int $number): array
     {
         $video = (new Video())
             ->setId(1)
             ->setUrl('http://example.com')
             ->setName('Example video');
-        $user = (new User())
-            ->setId(1)
-            ->setUsername('username')
-            ->setEmail('me@example.com')
-            ->setPassword('password');
 
         $videoPageView = (new VideoPageView())
             ->setVideo($video)
             ->setUser($user);
 
-        return [
-            'Access forbidden' =>
-            [
-                (clone $videoPageView)->setTimestamp(time() + 1),
-                (clone $videoPageView)->setTimestamp(time() + 2),
-                (clone $videoPageView)->setTimestamp(time() + 3),
-                (clone $videoPageView)->setTimestamp(time() + 4),
-                (clone $videoPageView)->setTimestamp(time() + 5),
-                (clone $videoPageView)->setTimestamp(time() + 6),
-                (clone $videoPageView)->setTimestamp(time() + 7),
-                (clone $videoPageView)->setTimestamp(time() + 8),
-                (clone $videoPageView)->setTimestamp(time() + 9),
-                (clone $videoPageView)->setTimestamp(time() + 10),
-            ]
-        ];
+        $pageViews = [];
+
+        for ($i = 0; $i < $number; $i++) {
+            $pageViews[] = (clone $videoPageView)->setTimestamp(time() - $i);
+        }
+
+        return $pageViews;
     }
 }
