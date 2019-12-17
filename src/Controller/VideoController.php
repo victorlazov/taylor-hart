@@ -1,55 +1,67 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Controller;
 
-use App\Entity\CoursePageViews;
+use App\Entity\Video;
 
-use App\Service\LoginService;
-use App\Service\VideoGenerator;
-use App\Service\VideoImpressionService;
+use App\Repository\VideoPageViewRepository;
+use App\Repository\VideoRepository;
+use App\Service\VideoImpressionManagerService;
 use App\Service\VideoPermissionsService;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\Annotation\Route;
 
 class VideoController extends AbstractController
 {
     /**
      * @Route("/video", name="video_index")
+     *
+     * @param VideoRepository $videoRepository
+     *
+     * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function index(VideoGenerator $videoGenerator)
+    public function index(VideoRepository $videoRepository)
     {
+        $videos = $videoRepository->findAll();
+
         return $this->render('video/index.html.twig',
-            ['videos' => $videoGenerator->getVideos(),]
+            ['videos' => $videos]
         );
     }
 
     /**
      * @Route("/video/{id}", name="video")
+     *
+     * @param Video $video
+     * @param VideoPageViewRepository $videoPageViewRepository
+     * @param VideoPermissionsService $videoPermissions
+     * @param VideoImpressionManagerService $videoImpressions
+     * @param SessionInterface $session
+     *
+     * @return \Symfony\Component\HttpFoundation\RedirectResponse|\Symfony\Component\HttpFoundation\Response
      */
     public function view(
-        $id,
-        VideoGenerator $videoGenerator,
-        LoginService $loginService,
+        Video $video,
+        VideoPageViewRepository $videoPageViewRepository,
         VideoPermissionsService $videoPermissions,
-        VideoImpressionService $videoImpressions
+        VideoImpressionManagerService $videoImpressions,
+        SessionInterface $session
     ) {
-        $videoPermissions->setCoursePageViews($id);
+        $user = $session->get('user');
+        $pageViews = $videoPageViewRepository->findBy(['video' => $video]);
+        $viewVideo = $videoPermissions->checkViewPermissions($pageViews);
 
-        if ($viewVideo = $videoPermissions->checkViewPermissions()) {
-            $userId = $loginService->getSession()->get('uid');
-            $videoImpressions->persistVideoImpression($userId, $id);
+        if($user) {
+            $videoImpressions->addVideoImpression($user, $video);
         }
 
-        if ($video = $videoGenerator->getVideo($id)) {
-            return $this->render('video/view.html.twig', [
-                'video'      => $video,
-                'video_id'   => $id,
-                'view_video' => $viewVideo,
-            ]);
-        }
-
-        return $this->redirectToRoute('video_index');
+        return $this->render('video/view.html.twig', [
+            'video' => $video,
+            'view_video' => $viewVideo,
+        ]);
     }
 }

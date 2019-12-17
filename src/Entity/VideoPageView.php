@@ -1,13 +1,14 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * @ORM\Entity(repositoryClass="App\Repository\CoursePageViewsRepository")
+ * @ORM\Entity(repositoryClass="App\Repository\VideoPageViewRepository")
  */
-class CoursePageViews
+class VideoPageView
 {
     /**
      * @ORM\Id()
@@ -17,14 +18,14 @@ class CoursePageViews
     private $id;
 
     /**
-     * @ORM\Column(type="integer")
+     * @ORM\ManyToOne(targetEntity="App\Entity\User", inversedBy="id")
      */
-    private $userId;
+    private $user;
 
     /**
-     * @ORM\Column(type="string", length=255)
+     * @ORM\ManyToOne(targetEntity="App\Entity\Video", inversedBy="id")
      */
-    private $courseId;
+    private $video;
 
     /**
      * @ORM\Column(type="integer")
@@ -36,26 +37,26 @@ class CoursePageViews
         return $this->id;
     }
 
-    public function getUserId(): ?int
+    public function getUser(): ?User
     {
-        return $this->userId;
+        return $this->user;
     }
 
-    public function setUserId(int $userId): self
+    public function setUser(User $user): self
     {
-        $this->userId = $userId;
+        $this->user = $user;
 
         return $this;
     }
 
-    public function getCourseId(): ?string
+    public function getVideo(): ?Video
     {
-        return $this->courseId;
+        return $this->video;
     }
 
-    public function setCourseId(string $courseId): self
+    public function setVideo(Video $video): self
     {
-        $this->courseId = $courseId;
+        $this->video = $video;
 
         return $this;
     }

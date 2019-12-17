@@ -20,8 +20,8 @@
 	<div class="example-wrapper">
 		<h1>Behold the list of all videos! ✅</h1>
 		<ol>
-			{% for v_key,video in videos %}
-				<li><a href="/video/{{ v_key }}">{{ video.name }}</a></li>
+			{% for video in videos %}
+				<li><a href="/video/{{ video.id }}">{{ video.name }}</a></li>
 			{% endfor %}
 		</ol>
 	</div>
